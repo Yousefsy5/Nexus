@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>My Site</title>
+  <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
+</head>
+<body>
+
+  <!-- LOGIN SCREEN -->
+  <div id="login">
+    <h1>Please verify</h1>
+    <div class="h-captcha" data-sitekey="PASTE_HCAPTCHA_SITEKEY" data-callback="captchaDone"></div>
+    <br>
+    <button id="btn" disabled>Sign in with Google</button>
+  </div>
+
+  <!-- SITE CONTENT (hidden until login) -->
+  <div id="site" style="display:none">
+    <h1>Welcome, <span id="name"></span>!</h1>
+    <p>Put your website content here.</p>
+    <button id="logout">Log out</button>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut }
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    // PASTE YOUR firebaseConfig HERE
+    const firebaseConfig = {
+      apiKey: "...",
+      authDomain: "...",
+      projectId: "...",
+      appId: "..."
+    };
+
+    const auth = getAuth(initializeApp(firebaseConfig));
+    const btn = document.getElementById("btn");
+
+    // Button only works after the captcha is solved
+    window.captchaDone = () => { btn.disabled = false; };
+
+    btn.onclick = () => signInWithPopup(auth, new GoogleAuthProvider());
+    document.getElementById("logout").onclick = () => signOut(auth);
+
+    // Show or hide the site depending on login
+    onAuthStateChanged(auth, (user) => {
+      document.getElementById("login").style.display = user ? "none" : "block";
+      document.getElementById("site").style.display = user ? "block" : "none";
+      if (user) document.getElementById("name").textContent = user.displayName;
+    });
+  </script>
+</body>
+</html>
